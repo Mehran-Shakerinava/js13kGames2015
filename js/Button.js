@@ -26,8 +26,14 @@ Button.prototype =
 	{
 		var ctx = this.ctx;
 		ctx.save();
-		ctx.fillStyle = "rgba(241, 192, 21, 0.7)";
+		ctx.fillStyle = "rgba(241, 192, 21, 0.8)";
 		ctx.fillRect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height);
+		
+		ctx.fillStyle = "#313830";
+		ctx.textAlign = "center";
+		ctx.textBaseline = "middle";
+		ctx.font = "Bold " + Math.floor(this.height / 3) + "px Arial";
+		
 		if(this.icon && this.text)
 		{
 			var dw = Math.min( this.width , this.icon.width );
@@ -36,13 +42,7 @@ Button.prototype =
 				Math.floor( this.x - dw / 2 ),
 				Math.floor( this.y + this.height / 4 - dh / 2 ),
 				dw, dh);
-			ctx.strokeStyle = "white";
-			ctx.fillStyle = "black";
-			ctx.textAlign = "center";
-			ctx.textBaseline = "middle";
-			ctx.font = "Bold " + Math.floor(this.height / 3) + "px Arial";
 			ctx.fillText(this.text, this.x, this.y - this.height / 4);
-			ctx.strokeText(this.text, this.x, this.y - this.height / 4);
 		}
 		else if(this.icon)
 		{
@@ -55,16 +55,15 @@ Button.prototype =
 		}
 		else if(this.text)
 		{
-			ctx.strokeStyle = "white";
-			ctx.fillStyle = "black";
-			ctx.textAlign = "center";
-			ctx.textBaseline = "middle";
-			ctx.font = Math.floor(this.height / 2) + "px arial";
 			ctx.fillText(this.text, this.x, this.y);
-			ctx.strokeText(this.text, this.x, this.y);
 		}
 		ctx.restore();
 		this.listen();
+	},
+
+	clear: function()
+	{
+		this.ctx.clearRect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height);
 	},
 
 	listen: function()

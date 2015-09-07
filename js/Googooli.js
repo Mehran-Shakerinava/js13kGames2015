@@ -157,8 +157,12 @@ var Googooli =
 
         var level = Worlds[GameManager.world].levels[GameManager.levelIdx];
         var finishNode = level.nodes[level.finish];
-        if(Math.distance(this.x, this.y, finishNode.x, finishNode.y) < finishNode.radius * 4 / 5)
+        if(GameManager.timer.running &&
+            Math.distance(this.x, this.y, finishNode.x, finishNode.y) < finishNode.radius * 4 / 5)
+        {
             GameManager.timer.stop();
+            GameManager.gotoPRIZE();
+        }
     },
 
     teleport: function(x, y)

@@ -49,3 +49,25 @@ Timer.prototype =
 			return this.time;
 	}
 };
+
+/**
+ * Static Method
+ */
+Timer.format = function(time)
+{
+    var milliseconds = time % 1000 + "";
+    while(milliseconds.length < 3)
+        milliseconds = "0" + milliseconds;
+
+    time = Math.floor(time / 1000);
+    var seconds = time % 60 + "";
+    while(seconds.length < 2)
+        seconds = "0" + seconds;
+
+    time = Math.floor(time / 60);
+    var minutes = time + "";
+    while(minutes.length < 2)
+        minutes = "0" + minutes;
+
+    return minutes + ":" + seconds + ":" + milliseconds;
+};

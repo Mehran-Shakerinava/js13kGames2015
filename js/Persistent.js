@@ -1,13 +1,15 @@
-var Persistent = {
+var Persistent =
+{
     data:
     {
         worlds:
         {
             A:
             {
-                levels: [
+                levels:
+                [
                     {
-                        highscore: Infinity
+                        highscore: null
                     }
                     /* Other levels are locked. */
                 ]
@@ -15,9 +17,10 @@ var Persistent = {
 
             B:
             {
-                levels: [
+                levels:
+                [
                     {
-                        highscore: Infinity
+                        highscore: null
                     }
                     /* Other levels are locked. */
                 ]
@@ -25,9 +28,10 @@ var Persistent = {
 
             C:
             {
-                levels: [
+                levels:
+                [
                     {
-                        highscore: Infinity
+                        highscore: null
                     }
                     /* Other levels are locked. */
                 ]
@@ -37,13 +41,13 @@ var Persistent = {
 
     load: function()
     {
-        var data = JSON.parse(window.localStorage.getItem("GOOGOOLI"));
-        if(data)
-            Persistent.data = data;
+        var dataString = window.localStorage.getItem("GOOGOOLI");
+        if(dataString != "undefined" && dataString != "null" && dataString)
+            Persistent.data = JSON.parse(dataString);
     },
 
     save: function()
     {
-        window.localStorage.setItem("GOOGOOLI", Persistent.data);
+        window.localStorage.setItem("GOOGOOLI", JSON.stringify(Persistent.data));
     }
 };

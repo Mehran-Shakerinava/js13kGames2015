@@ -15,6 +15,7 @@ var GameManager = {
 
     init: function()
     {
+        Persistent.load();
         Camera.width = GraphicsManager.CANVAS_WIDTH;
         Camera.height = GraphicsManager.CANVAS_HEIGHT;
 
@@ -67,6 +68,25 @@ var GameManager = {
         this.loadLevel(Worlds[world].levels[idx]);
         GraphicsManager.renderPLAY();
         Controller.turnOn();
+    },
+
+    gotoPRIZE: function()
+    {
+        this.state = "PRIZE";
+        
+        this.unlockLevel(this.world, this.levelIdx + 1);
+
+        var newHighscore = false;
+        var levelData = Persistent.data.worlds[this.world].levels[this.levelIdx];
+
+        if(this.timer.getTime() < levelData.highscore || levelData.highscore == null)
+        {
+            newHighscore = true;
+            levelData.highscore = this.timer.getTime();
+            Persistent.save();
+        }
+
+        GraphicsManager.renderPRIZE(newHighscore);
     },
 
     loadLevel: function(level)
@@ -194,7 +214,11 @@ var GameManager = {
 
     unlockLevel: function(world, idx)
     {
-        Persistent.data.worlds[world].levels[idx] = { highscore: Infinity };
+        if(!Persistent.data.worlds[world].levels[idx])
+        {
+            Persistent.data.worlds[world].levels[idx] = { highscore: null };
+            Persistent.save();
+        }
     }
 };
 
