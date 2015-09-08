@@ -125,7 +125,7 @@ var GameManager = {
         canvas.width = maxX + OFFSET;
         canvas.height = maxY + OFFSET;
 
-        var pattern = ctx.createPattern(document.getElementById("hex"), "repeat");
+        var pattern = ctx.createPattern(document.getElementById(level.fg), "repeat");
         ctx.fillStyle = pattern;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -171,7 +171,7 @@ var GameManager = {
         canvas.width = maxX + OFFSET;
         canvas.height = maxY + OFFSET;
 
-        var pattern = ctx.createPattern(document.getElementById("hex-metal"), "repeat");
+        var pattern = ctx.createPattern(document.getElementById(level.bg), "repeat");
         ctx.fillStyle = pattern;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 

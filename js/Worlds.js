@@ -8,6 +8,9 @@ var Worlds =
 		[
 			/* 0 */
 			{
+                bg: "lodyas",
+                fg: "triangular",
+
 				nodes:
 				[
 					/* 0 */
@@ -65,6 +68,9 @@ var Worlds =
 			
 			/* 1 */
 			{
+                bg: "hixs",
+                fg: "hex",
+
 				nodes:
 				[
 					/* 0 */
@@ -122,6 +128,9 @@ var Worlds =
 
 			/* 2 */
 			{
+                bg: "lodyas",
+                fg: "triangular",
+
 				nodes:
 				[
 					/* 0 */
@@ -223,6 +232,9 @@ var Worlds =
 			},
 			/* 3 */
 			{
+                bg: "hixs",
+                fg: "hex",
+                
 				nodes:
 				[
 					/* 0 */
@@ -331,6 +343,9 @@ var Worlds =
 			},
 			/* 4 */
 			{
+                bg: "lodyas",
+                fg: "triangular",
+
 				nodes:
 				[
 					/* 0 */
@@ -498,7 +513,6 @@ var Worlds =
 
 				start: 0,
 				finish: 19
-				
 			}
 		]
 	},

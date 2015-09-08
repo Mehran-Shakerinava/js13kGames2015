@@ -11,8 +11,9 @@
 		<div class="hide"> <!-- only for preloading small files! -->
 			<img id="googooli"	 src="entities/googooli.png">		</img>
 			<img id="triangular" src="patterns/triangular.png">		</img>
-			<img id="warning"	 src="patterns/warning.png">		</img>
 			<img id="lodyas"	 src="patterns/lodyas.png">			</img>
+			<img id="hex-metal"	 src="patterns/hex-metal.png">		</img>
+			<img id="warning"	 src="patterns/warning.png">		</img>
 			<img id="hixs"		 src="patterns/hixs.png">			</img>
 			<img id="hex"		 src="patterns/hex.png">			</img>
 			<img id="repeat"	 src="icons/repeat.png">			</img>
