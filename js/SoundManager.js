@@ -2,44 +2,40 @@
 
 var SoundManager =
 {
-	audioCtx: null,
-	gainNode: null,
-	source: null,
-	
-	audio: null,
+    audioCtx: null,
+    
+    errorSource: null,
 
+    biquadFilter: null,
+	gainNode: null,
+	
 	init: function()
 	{
 		this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-		this.gainNode = this.audioCtx.createGain();
-		this.setGain(0.2);
+        
+        this.gainNode = this.audioCtx.createGain();
+		this.setVolume(1);
+		this.gainNode.connect(this.audioCtx.destination);
 
-		this.audio = new Audio();
-		this.createSource();
-		this.createAudioGraph();
-		this.audio.src = "audio/ObservingTheStar-min.ogg";
-		this.audio.preload = "auto";
-		this.audio.loop = true;
+        this.biquadFilter = this.audioCtx.createBiquadFilter();
+        this.biquadFilter.type = "lowshelf";
+        this.biquadFilter.frequency.value = 100;
+        this.biquadFilter.gain.value = 50;
+        this.biquadFilter.connect(this.gainNode);
 	},
 
-	setGain: function(vol)
+	setVolume: function(vol)
 	{
 		this.gainNode.gain.value = vol;
 	},
 
-	createSource: function()
-	{
-		this.source = this.audioCtx.createMediaElementSource(this.audio);
-	},
-
-	createAudioGraph: function()
-	{
-		this.source.connect(this.gainNode);
-		this.gainNode.connect(this.audioCtx.destination);
-	},
-
-	playAudio: function()
-	{
-		//this.audio.play();
-	}
+    playError: function()
+    {
+        this.errorSource = this.audioCtx.createOscillator();
+        this.errorSource.type = "sine";
+        this.errorSource.frequency.value = 100;
+        this.errorSource.connect(this.biquadFilter);
+        this.errorSource.start(this.audioCtx.currentTime);
+        this.errorSource.stop(this.audioCtx.currentTime + 0.15);
+    }
 };

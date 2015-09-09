@@ -27,12 +27,13 @@ Button.prototype =
 		var ctx = this.ctx;
 		ctx.save();
 		ctx.fillStyle = "rgba(241, 192, 21, 0.8)";
-		ctx.fillRect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height);
+		ctx.roundedRect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height, 5);
+		ctx.fill();
 		
-		ctx.fillStyle = "#313830";
+		ctx.fillStyle = "black";
 		ctx.textAlign = "center";
 		ctx.textBaseline = "middle";
-		ctx.font = "Bold " + Math.floor(this.height / 3) + "px Arial";
+		ctx.font = "italic " + Math.floor(this.height / 3) + "px 'Comic Sans MS'";
 		
 		if(this.icon && this.text)
 		{
@@ -144,10 +145,26 @@ if('ontouchstart' in document.documentElement ||
 	(window.navigator.maxTouchPoints && window.navigator.maxTouchPoints > 1))
 {
 	/* touch */
-	window.addEventListener("touchend", function(event) {Button.touchend(event);});
+	window.addEventListener("touchend", function(event) {Button.mouseup(event);});
 }
 else
 {
 	/* mouse */
 	window.addEventListener("mouseup", function(event) {Button.mouseup(event);});
 }
+
+/* creates a rectangle with rounded corners */
+CanvasRenderingContext2D.prototype.roundedRect = function(x, y, width, height, radius)
+{
+    var ctx = this;
+    ctx.beginPath();
+    ctx.moveTo(x, y + radius);
+    ctx.lineTo(x, y + height - radius);
+    ctx.quadraticCurveTo(x, y + height, x + radius, y + height);
+    ctx.lineTo(x + width - radius, y + height);
+    ctx.quadraticCurveTo(x + width, y + height, x + width, y + height - radius);
+    ctx.lineTo(x + width, y + radius);
+    ctx.quadraticCurveTo(x + width, y, x + width - radius, y);
+    ctx.lineTo(x + radius, y);
+    ctx.quadraticCurveTo(x, y, x, y + radius);
+};

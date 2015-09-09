@@ -2,14 +2,15 @@
 
 /* TODO: support all screen ratios */
 
-var GraphicsManager =
-{
+var GraphicsManager = {
     /* constants */
     CANVAS_WIDTH: 480,
     CANVAS_HEIGHT: 320,
 
     cssZoom: 1,
     maxCssZoom: 1,
+
+    enemyImageIdx: 0,
 
     init: function()
     {
@@ -27,6 +28,9 @@ var GraphicsManager =
 
         this.googooliContext = this.createCanvas("googooliCanvas").getContext("2d");
         this.googooliContext.canvas.style["z-index"] = 1;
+
+        this.enemiesContext = this.createCanvas("enemiesCanvas").getContext("2d");
+        this.enemiesContext.canvas.style["z-index"] = 1;
 
         this.guiContext = this.createCanvas("guiCanvas").getContext("2d");
         this.guiContext.canvas.style["z-index"] = 2;
@@ -80,7 +84,7 @@ var GraphicsManager =
 
     clearScreen: function()
     {
-    	var canvasList = document.querySelectorAll("canvas");
+        var canvasList = document.querySelectorAll("canvas");
         for(var i = 0; i < canvasList.length; ++i)
         {
             var canvas = canvasList[i];
@@ -99,12 +103,10 @@ var GraphicsManager =
         ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
         ctx.textAlign = "center";
-        ctx.fillStyle = "white";
-        ctx.font = "Bold 50px Arial";
-        ctx.fillText("GOOGOOLI", ctx.canvas.width / 2, ctx.canvas.height * 1 / 6);
-        ctx.strokeStyle = "black";
-        ctx.strokeText("GOOGOOLI", ctx.canvas.width / 2, ctx.canvas.height * 1 / 6);
-
+        ctx.fillStyle = "black";
+        ctx.font = "italic 50px 'Comic Sans MS'";
+        ctx.fillText("Googooli", ctx.canvas.width / 2, ctx.canvas.height * 1 / 6);
+        
         var button = new Button(ctx, ctx.canvas.width / 2, ctx.canvas.height / 2, function()
         {
             Button.clearListening();
@@ -112,6 +114,8 @@ var GraphicsManager =
             GameManager.gotoWORLDSEL();
         });
         button.icon = document.getElementById("play");
+        button.width = 80;
+        button.height = 80;
         button.show();
 
         ctx.restore();
@@ -121,91 +125,80 @@ var GraphicsManager =
     {
         var ctx = this.worldselContext;
         ctx.save();
+        
         ctx.fillStyle = "rgba(50, 100, 150, 1)";
         ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
-        var button = new Button(ctx, ctx.canvas.width / 2, ctx.canvas.height / 4, function()
+        for(var i = 0; i < Worlds.length; ++i)
         {
-            Button.clearListening();
-            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-            GameManager.gotoLEVELSEL("A");
-        });
-        button.width = 500;
-        button.height = 70;
-        button.text = "ROBOT FACTORY";
-        button.show();
-
-        var button = new Button(ctx, ctx.canvas.width / 2, ctx.canvas.height / 2, function()
-        {
-            Button.clearListening();
-            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-            GameManager.gotoLEVELSEL("B");
-        });
-        button.width = 500;
-        button.height = 70;
-        button.text = "HUMAN ANATOMY";
-        button.show();
-
-        var button = new Button(ctx, ctx.canvas.width / 2, ctx.canvas.height * 3 / 4, function()
-        {
-            Button.clearListening();
-            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-            GameManager.gotoLEVELSEL("C");
-        });
-        button.width = 500;
-        button.height = 70;
-        button.text = "DELUSIONAL";
-        button.show();
+            var button = new Button(ctx, ctx.canvas.width / 2, ctx.canvas.height * (i + 1) / (Worlds.length + 1), function()
+            {
+                if(this.locked)
+                {
+                    SoundManager.playError();
+                    return;
+                }
+                
+                Button.clearListening();
+                GraphicsManager.clearCanvas(GraphicsManager.worldselContext);
+                GameManager.world = this.data;
+                GameManager.gotoLEVELSEL();
+            });
+            button.data = i;
+            button.locked = !Persistent.data.worlds[i];
+            button.width = ctx.canvas.width * 2 / 3;
+            button.height = ctx.canvas.height / (Worlds.length + 1) - 10;
+            if(button.locked)
+                button.icon = document.getElementById("locked");
+            else
+                button.text = Worlds[i].name;
+            button.show();
+        }
 
         this.renderBack(ctx, function()
         {
-            GraphicsManager.clearCanvas(GraphicsManager.worldselContext);
             Button.clearListening();
+            GraphicsManager.clearCanvas(GraphicsManager.worldselContext);
             GameManager.gotoINTRO();
         });
 
         ctx.restore();
     },
 
-    renderLEVELSEL: function(world)
+    renderLEVELSEL: function()
     {
         var ctx = this.levelselContext;
         ctx.save();
         ctx.fillStyle = "rgba(50, 100, 150, 1)";
         ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        var world = GameManager.world;
+        var n = Worlds[world].levels.length;
 
-        var dx = ctx.canvas.width / 6;
-        var dy = ctx.canvas.height / 3;
-        for(var i = 0; i < 5; ++i)
-            for(var j = 0; j < 2; ++j)
+        for(var i = 0; i < Worlds[world].levels.length; ++i)
+        {
+            var button = new Button(ctx, ctx.canvas.width * (i + 1) / (n + 1), ctx.canvas.height / 2, function()
             {
-                var x = (i + 1) * dx;
-                var y = (j + 1) * dy;
-                var idx = j * 5 + i;
-
-                var button = new Button(ctx, x, y, function()
+                if(this.locked)
                 {
-                    if(this.locked)
-                    {
-                        console.log("ERROR");
-                        // SoundManager.playError();
-                    }
-                    else
-                    {
-                        Button.clearListening();
-                        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-                        GameManager.gotoPLAY(world, this.text - 1);
-
-                    }
-                });
-                button.locked = !Persistent.data.worlds[world].levels[idx];
-                if(button.locked)
-                    button.icon = document.getElementById("locked");
-                button.width = dx * 4 / 5;
-                button.height = dy * 4 / 5;
-                button.text = idx + 1;
-                button.show();
-            }
+                    SoundManager.playError();
+                }
+                else
+                {
+                    Button.clearListening();
+                    GraphicsManager.clearCanvas(this.ctx);
+                    GameManager.level = this.data;
+                    GameManager.gotoPLAY();
+                }
+            });
+            button.data = i;
+            button.locked = !Persistent.data.worlds[world].levels[i];
+            if(button.locked)
+                button.icon = document.getElementById("locked");
+            button.width = ctx.canvas.width / (n + 1) - 10;
+            button.height = ctx.canvas.height / 3;
+            button.text = i + 1;
+            button.show();
+        }
 
         this.renderBack(ctx, function()
         {
@@ -242,15 +235,15 @@ var GraphicsManager =
             goldImg.width, goldImg.height);
 
         ctx.fillStyle = "white";
-		ctx.textAlign = "center";
-		ctx.textBaseline = "middle";
-		ctx.font = "italic 16px Arial";
-		var highscore = Persistent.data.worlds[GameManager.world].levels[GameManager.levelIdx].highscore;
-		var text = (newHighscore ? "New highscore!" : "highscore: " + Timer.format(highscore));
-		ctx.fillText(text, ctx.canvas.width / 2, ctx.canvas.height / 3 + 15);
-		// ctx.strokeText(text, ctx.canvas.width / 2, ctx.canvas.height / 3 + 15);
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.font = "italic 16px Arial";
+        var highscore = Persistent.data.worlds[GameManager.world].levels[GameManager.level].highscore;
+        var text = (newHighscore ? "New highscore!" : "highscore: " + Timer.format(highscore));
+        ctx.fillText(text, ctx.canvas.width / 2, ctx.canvas.height / 3 + 15);
+        // ctx.strokeText(text, ctx.canvas.width / 2, ctx.canvas.height / 3 + 15);
 
-		var nextButton = new Button(ctx, ctx.canvas.width / 2, ctx.canvas.height * 2 / 3 + 15, function()
+        var nextButton = new Button(ctx, ctx.canvas.width / 2, ctx.canvas.height * 2 / 3 + 15, function()
         {
             Googooli.reset();
             GameManager.timer.reset();
@@ -258,9 +251,21 @@ var GraphicsManager =
             GraphicsManager.stopRenderingGoogooli();
             Button.clearListening();
             GraphicsManager.clearScreen();
-            
-            /* TODO: idx + 1 might not exist! */
-            GameManager.gotoPLAY(GameManager.world, GameManager.levelIdx + 1);
+
+            if(GameManager.level + 1 < Worlds[GameManager.world].levels.length)
+                GameManager.level++;
+            else
+            {
+                GameManager.level = 0;
+                if(GameManager.world + 1 < Worlds.length)
+                    GameManager.world++;
+                else
+                {
+                    GameManager.world = 0;
+                    console.log("Congratulations!");
+                }
+            }   
+            GameManager.gotoPLAY();
         });
         nextButton.icon = document.getElementById("play");
         nextButton.width = 45;
@@ -285,7 +290,7 @@ var GraphicsManager =
             GraphicsManager.stopRenderingGoogooli();
             Button.clearListening();
             GraphicsManager.clearScreen();
-            
+
             GameManager.gotoLEVELSEL(GameManager.world);
         });
 
@@ -297,8 +302,8 @@ var GraphicsManager =
             GraphicsManager.stopRenderingGoogooli();
             Button.clearListening();
             GraphicsManager.clearScreen();
-            
-            GameManager.gotoPLAY(GameManager.world, GameManager.levelIdx);
+
+            GameManager.gotoPLAY(GameManager.world, GameManager.level);
         });
         replayButton.icon = document.getElementById("repeat");
         replayButton.width = 30;
@@ -315,6 +320,7 @@ var GraphicsManager =
             GraphicsManager.stopRenderingGoogooli();
             GameManager.timer.stop();
             Googooli.stopUpdating();
+            Enemies.stopUpdating();
 
             var ctx = GraphicsManager.overlayContext;
             ctx.save();
@@ -332,8 +338,9 @@ var GraphicsManager =
             this.unlisten();
             this.clear();
             pauseButton.show();
-            
+
             Googooli.startUpdating();
+            Enemies.startUpdating();
             GraphicsManager.startRenderingGoogooli();
             if(GameManager.timer.getTime() && GameManager.state === "PLAY")
             {
@@ -365,6 +372,27 @@ var GraphicsManager =
     {
         this.levelContext.clearRect(0, 0, this.levelContext.canvas.width, this.levelContext.canvas.height);
         this._render(GameManager.levelImage, this.levelContext, Camera);
+    },
+
+    /* ENEMIES */
+
+    renderEnemies: function()
+    {
+        var ctx = this.enemiesContext;
+        ctx.save();
+        
+        this.clearCanvas(ctx);
+        this.enemyImageIdx = (this.enemyImageIdx + 1) % Enemies.images.length;
+        for(var i = 0; i < Enemies.data.length; ++i)
+        {
+            var enemy = Enemies.data[i];
+            var img = Enemies.images[this.enemyImageIdx];
+            var x = ctx.canvas.width  / 2 + enemy.x - Camera.x - 32;
+            var y = ctx.canvas.height / 2 + enemy.y - Camera.y - 32;
+            ctx.drawImage(img, x, y);
+        }
+        
+        ctx.restore();
     },
 
     /* GOOGOOLI */
@@ -417,16 +445,16 @@ var GraphicsManager =
     startRenderingTime: function()
     {
         if(!this.timeRequestID)
-        	this.requestTimeRender();
+            this.requestTimeRender();
     },
 
     stopRenderingTime: function()
     {
-    	if(this.timeRequestID)
-    	{
-	        window.cancelAnimationFrame(this.timeRequestID);
-	        this.timeRequestID = 0;
-    	}
+        if(this.timeRequestID)
+        {
+            window.cancelAnimationFrame(this.timeRequestID);
+            this.timeRequestID = 0;
+        }
     },
 
     renderTime: function(time)
@@ -458,14 +486,14 @@ var GraphicsManager =
 
     requestTimeRender: function()
     {
-    	this.timeRequestID = window.requestAnimationFrame(function()
+        this.timeRequestID = window.requestAnimationFrame(function()
         {
             GraphicsManager.requestTimeRender();
         });
         this.renderTime(GameManager.timer.getTime());
     },
 
-	/* MASTER RENDERER */
+    /* MASTER RENDERER */
 
     _render: function(src, ctx, cam)
     {
@@ -490,18 +518,60 @@ var GraphicsManager =
     }
 };
 
-/* creates a rectangle with rounded corners */
-CanvasRenderingContext2D.prototype.roundedRect = function(x, y, width, height, radius)
+/* A Masterpiece! - highly efficient code */
+/* gradually changes opacity to [finalOp] during [time] miliseconds */
+CanvasRenderingContext2D.prototype.opacitate = function(finalOp, time)
 {
     var ctx = this;
-    ctx.beginPath();
-    ctx.moveTo(x, y + radius);
-    ctx.lineTo(x, y + height - radius);
-    ctx.quadraticCurveTo(x, y + height, x + radius, y + height);
-    ctx.lineTo(x + width - radius, y + height);
-    ctx.quadraticCurveTo(x + width, y + height, x + width, y + height - radius);
-    ctx.lineTo(x + width, y + radius);
-    ctx.quadraticCurveTo(x + width, y, x + width - radius, y);
-    ctx.lineTo(x + radius, y);
-    ctx.quadraticCurveTo(x, y, x, y + radius);
+    var canvas = ctx.canvas;
+    
+    /* Just in case */
+    if( isNaN(time) )
+    {
+        console.log("ERROR: time is NaN. Falling back to [AnimTime].");
+        time = AnimTime;
+    }
+    
+    if(this.opacitateStartTime === undefined)
+    {
+        /* threshold */
+        time -= 40;
+        /* this is done in first call to function */
+        if(canvas.style.opacity === "") canvas.style.opacity = 1;
+        this.opacitateTimeStamp = this.opacitateStartTime = new Date().getTime();
+        this.opacitateRequestID = requestAnimationFrame(function() {ctx.opacitate(finalOp, time);});
+    }
+    else
+    {
+        /* mark time */
+        var clock = new Date().getTime();
+        /* previous cycle */
+        var prevRemTime = time - this.opacitateTimeStamp + this.opacitateStartTime;
+        var prevRemOp = finalOp - canvas.style.opacity;
+        /* current cycle */
+        var curRemTime = time - clock + this.opacitateStartTime;
+        var curRemOp = curRemTime * prevRemOp / prevRemTime;
+        /* calculate opacity */
+        canvas.style.opacity = finalOp - curRemOp;
+        /* update timeStamp */
+        this.opacitateTimeStamp = clock;
+        
+        if(curRemTime <= 0)
+        {
+            canvas.style.opacity = finalOp;
+            this.opacitateStartTime = undefined;
+            cancelAnimationFrame(this.opacitateRequestID);
+        }
+        else
+            this.opacitateRequestID = requestAnimationFrame(function() {ctx.opacitate(finalOp, time);});
+    }
+};
+
+CanvasRenderingContext2D.prototype.fadeout = function(time)
+{
+    var ctx = this;
+    var canvas = ctx.canvas;
+    ctx.opacitate(0, time - 30);
+    window.setTimeout(function() {ctx.clearRect(0, 0, canvas.width, canvas.height);
+        canvas.style.opacity = 1;}, time - 30);
 };

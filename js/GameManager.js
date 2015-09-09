@@ -6,11 +6,12 @@ window.addEventListener("load", function()
     GameManager.init();
 });
 
-var GameManager = {
+var GameManager =
+{
     state: "LOADING",
     timer: null,
-    world: null,
-    levelIdx: null,
+    world: 0,
+    level: 0,
     levelImage: null,
 
     init: function()
@@ -20,12 +21,13 @@ var GameManager = {
         Camera.height = GraphicsManager.CANVAS_HEIGHT;
 
         Googooli.init(document.getElementById("googooli"));
+        Enemies.init(document.getElementById("enemy"));
         GraphicsManager.init();
         SoundManager.init();
 
         EventManager.addResizeEventListener();
         EventManager.addKeyboardEventListener();
-        SoundManager.playAudio();
+        // SoundManager.playAudio();
 
         this.timer = new Timer();
         this.gotoINTRO();
@@ -45,27 +47,25 @@ var GameManager = {
         GraphicsManager.renderWORLDSEL();
     },
 
-    gotoLEVELSEL: function(world)
+    gotoLEVELSEL: function()
     {
         this.state = "LEVELSEL";
         Controller.turnOff();
         GraphicsManager.clearCanvas(GraphicsManager.guiContext);
-        GraphicsManager.renderLEVELSEL(world);
+        GraphicsManager.renderLEVELSEL();
     },
 
-    gotoPLAY: function(world, idx)
+    gotoPLAY: function()
     {
         this.state = "PLAY";
         this.timer.reset();
         Controller.turnOff();
-        this.world = world;
-        this.levelIdx = idx;
-
-        // console.log(world);
-        // console.log(idx);
-        // console.log(Worlds[world].levels[idx]);
-
-        this.loadLevel(Worlds[world].levels[idx]);
+        
+        this.loadLevel(Worlds[this.world].levels[this.level]);
+        Googooli.comeToLife();
+        Enemies.load();
+        Enemies.startUpdating();
+        Camera.teleport(Googooli.x, Googooli.y);
         GraphicsManager.renderPLAY();
         Controller.turnOn();
     },
@@ -73,11 +73,11 @@ var GameManager = {
     gotoPRIZE: function()
     {
         this.state = "PRIZE";
-        
-        this.unlockLevel(this.world, this.levelIdx + 1);
+
+        this.unlockLevel(this.world, this.level + 1);
 
         var newHighscore = false;
-        var levelData = Persistent.data.worlds[this.world].levels[this.levelIdx];
+        var levelData = Persistent.data.worlds[this.world].levels[this.level];
 
         if(this.timer.getTime() < levelData.highscore || levelData.highscore == null)
         {
@@ -94,25 +94,48 @@ var GameManager = {
         this.createLevel(level);
         var startNode = level.nodes[level.start];
         Googooli.teleport(startNode.x, startNode.y);
-        Googooli.die();
-        Googooli.comeToLife();
-        Camera.teleport(startNode.x, startNode.y);
-        Camera.bounce();
-        Camera.teleport(Camera.aimX, Camera.aimY);
     },
 
-    createLevel: function(level)
+    createLevel: function()
     {
-        if(!level.toCanvas)
+        var worldData = Worlds[this.world];
+        var levelData = worldData.levels[this.level];
+        var points = levelData.nodes;
+        if(!levelData.enemies)
+            levelData.enemies = [];
+
+        if(!levelData.transformed)
         {
-            this.planeToCanvas(level.nodes);
-            level.toCanvas = true;
+            var minX = Infinity,
+                minY = Infinity;
+            for(var i = 0; i < points.length; ++i)
+            {
+                var x = points[i].x - points[i].radius;
+                /* canvas y coordinates are reversed */
+                var y = -points[i].y - points[i].radius;
+
+                if(x < minX) minX = x;
+                if(y < minY) minY = y;
+            }
+            for(var i = 0; i < points.length; ++i)
+            {
+                points[i].x =  points[i].x - minX + OFFSET;
+                points[i].y = -points[i].y - minY + OFFSET;
+            }
+            for(var i = 0; i < levelData.enemies.length; ++i)
+            {
+                var point = levelData.enemies[i].center;
+                point.x =  point.x - minX + OFFSET;
+                point.y = -point.y - minY + OFFSET;
+            }
+            levelData.transformed = true;
         }
+        
         var maxX = -Infinity,
             maxY = -Infinity;
-        for(var i = 0; i < level.nodes.length; ++i)
+        for(var i = 0; i < levelData.nodes.length; ++i)
         {
-            var node = level.nodes[i];
+            var node = levelData.nodes[i];
             var x = node.x + node.radius;
             var y = node.y + node.radius;
 
@@ -125,22 +148,22 @@ var GameManager = {
         canvas.width = maxX + OFFSET;
         canvas.height = maxY + OFFSET;
 
-        var pattern = ctx.createPattern(document.getElementById(level.fg), "repeat");
+        var pattern = ctx.createPattern(document.getElementById(worldData.fg), "repeat");
         ctx.fillStyle = pattern;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         ctx.globalCompositeOperation = "destination-out";
 
-        for(var i = 0; i < level.nodes.length; ++i)
+        for(var i = 0; i < levelData.nodes.length; ++i)
         {
-            var node = level.nodes[i];
+            var node = levelData.nodes[i];
             ctx.beginPath();
             ctx.arc(node.x, node.y, node.radius, 0, 2 * Math.PI);
             ctx.fill();
 
             for(var j = 0; j < node.links.length; ++j)
             {
-                var node2 = level.nodes[node.links[j]];
+                var node2 = levelData.nodes[node.links[j]];
 
                 var dx = node.x - node2.x;
                 var dy = node.y - node2.y;
@@ -163,6 +186,7 @@ var GameManager = {
             }
         }
 
+        /* BOOM performance down the drain! */
         Googooli.collisionImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
 
         var canvas2 = canvas;
@@ -171,13 +195,12 @@ var GameManager = {
         canvas.width = maxX + OFFSET;
         canvas.height = maxY + OFFSET;
 
-        var pattern = ctx.createPattern(document.getElementById(level.bg), "repeat");
+        var pattern = ctx.createPattern(document.getElementById(worldData.bg), "repeat");
         ctx.fillStyle = pattern;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // var pattern = ctx.createPattern(document.getElementById("warning"), "repeat");
         ctx.fillStyle = "rgba(0, 255, 200, 0.2)";
-        var node = level.nodes[level.finish];
+        var node = levelData.nodes[levelData.finish];
         ctx.beginPath();
         ctx.arc(node.x, node.y, node.radius * 4 / 5, 0, 2 * Math.PI);
         ctx.fill();
@@ -214,11 +237,21 @@ var GameManager = {
 
     unlockLevel: function(world, idx)
     {
+        if(!Persistent.data.worlds[world])
+        {
+            Persistent.data.worlds[world] =
+            {
+                levels: []
+            };   
+        }
         if(!Persistent.data.worlds[world].levels[idx])
         {
-            Persistent.data.worlds[world].levels[idx] = { highscore: null };
-            Persistent.save();
+            Persistent.data.worlds[world].levels[idx] =
+            {
+                highscore: null
+            };
         }
+        Persistent.save();
     }
 };
 

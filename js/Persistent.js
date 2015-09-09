@@ -3,30 +3,8 @@ var Persistent =
     data:
     {
         worlds:
-        {
-            A:
-            {
-                levels:
-                [
-                    {
-                        highscore: null
-                    }
-                    /* Other levels are locked. */
-                ]
-            },
-
-            B:
-            {
-                levels:
-                [
-                    {
-                        highscore: null
-                    }
-                    /* Other levels are locked. */
-                ]
-            },
-
-            C:
+        [
+            /* 0 */
             {
                 levels:
                 [
@@ -36,7 +14,8 @@ var Persistent =
                     /* Other levels are locked. */
                 ]
             }
-        }
+            /* Other worlds are locked */
+        ]
     },
 
     load: function()

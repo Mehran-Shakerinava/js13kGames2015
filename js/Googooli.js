@@ -155,7 +155,7 @@ var Googooli =
         Camera.teleport(this.x, this.y);
         GraphicsManager.renderLevel();
 
-        var level = Worlds[GameManager.world].levels[GameManager.levelIdx];
+        var level = Worlds[GameManager.world].levels[GameManager.level];
         var finishNode = level.nodes[level.finish];
         if(GameManager.timer.running &&
             Math.distance(this.x, this.y, finishNode.x, finishNode.y) < finishNode.radius * 4 / 5)
