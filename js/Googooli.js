@@ -1,11 +1,10 @@
 "use strict";
 
-var Googooli =
-{
+var Googooli = {
     /* CONSTANTS */
     WIDTH: 64,
     HEIGHT: 64,
-    
+
     /* FRICTION < ACCEL */
     ACCEL: 150,
     MAX_VEL: 300,
@@ -24,171 +23,236 @@ var Googooli =
     updateRequestID: 0,
     updateTimeStamp: 0,
 
-    image: null,
-    imageData: null,
-    collisionImageData: null,
+    wallsCanvas: null,
+    helpContext: null,
+    /* images[row][col] */
+    row: 1,
+    col: 1,
+    images: [[], [], []],
+    datas: [[], [], []],
 
-    init: function(image)
+    init: function(spritesheet)
     {
-        var canvas = document.createElement("canvas");
-        canvas.width = this.WIDTH;
-        canvas.height = this.HEIGHT;
-        var ctx = canvas.getContext("2d");
-        ctx.drawImage(image, 0, 0, this.WIDTH, this.HEIGHT, 0, 0, this.WIDTH, this.HEIGHT);
-        this.imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        this.image = canvas;
+        for(var i = 0; i < 3; ++i)
+            for(var j = 0; j < 3; ++j)
+            {
+                var canvas = document.createElement("canvas");
+                canvas.width = Googooli.WIDTH;
+                canvas.height = Googooli.HEIGHT;
+                var ctx = canvas.getContext("2d");
+                ctx.drawImage(spritesheet, j * Googooli.WIDTH, i * Googooli.HEIGHT, Googooli.WIDTH, Googooli.HEIGHT,
+                    0, 0, Googooli.WIDTH, Googooli.HEIGHT);
+                Googooli.datas[i][j] = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                Googooli.images[i][j] = canvas;
+            }
+
+        var helpCanvas = document.createElement("canvas");
+        helpCanvas.width = Googooli.WIDTH;
+        helpCanvas.height = Googooli.HEIGHT;
+        Googooli.helpContext = helpCanvas.getContext("2d");
     },
 
     comeToLife: function()
     {
-        this.reset();
-        this.startUpdating();
+        Googooli.reset();
+        Googooli.startUpdating();
     },
 
     die: function()
     {
-        this.stopUpdating();
-        this.velX = this.velY = 0;
+        if(Googooli.col === 2)
+            return;
+        GameManager.timer.stop();
+        Controller.turnOff();
+        Googooli.col = 2;
+        GraphicsManager.renderGameover();
     },
 
     reset: function()
     {
-        this.stopUpdating();
-        this.velX = this.velY = 0;
+        Googooli.stopUpdating();
+        Googooli.velX = Googooli.velY = 0;
+        Googooli.row = Googooli.col = 1;
     },
 
     /* UPDATING */
 
     startUpdating: function()
     {
-        if(!this.updateRequestID)
-            this.requestUpdate();
+        if(!Googooli.updateRequestID)
+            Googooli.requestUpdate();
     },
 
     stopUpdating: function()
     {
-        if(this.updateRequestID)
+        if(Googooli.updateRequestID)
         {
-            window.cancelAnimationFrame(this.updateRequestID);
-            this.updateRequestID = 0;
-            this.updateTimeStamp = 0;
+            window.cancelAnimationFrame(Googooli.updateRequestID);
+            Googooli.updateRequestID = 0;
+            Googooli.updateTimeStamp = 0;
         }
     },
 
     requestUpdate: function()
     {
-        this.updateRequestID = window.requestAnimationFrame(function()
+        Googooli.updateRequestID = window.requestAnimationFrame(function()
         {
             Googooli.requestUpdate();
         });
-        this.update();
+        Googooli.update();
     },
 
     update: function()
     {
         var now = Date.now();
         var dt = 0;
-        if(this.updateTimeStamp)
-            dt = now - this.updateTimeStamp;
-        this.updateTimeStamp = now;
+        if(Googooli.updateTimeStamp)
+            dt = now - Googooli.updateTimeStamp;
+        Googooli.updateTimeStamp = now;
         dt /= 1000;
-        
+
         /* if [Googooli has started to move] & [timer hasn't started] */
-        if((this.accelX || this.accelY) && !GameManager.timer.getTime())
+        if((Googooli.accelX || Googooli.accelY) && !GameManager.timer.getTime())
         {
             GameManager.timer.start();
             GraphicsManager.startRenderingTime();
         }
 
         /* update velX */
-        if(this.accelX)
+        if(Googooli.accelX)
         {
-            this.velX += this.accelX * this.ACCEL * dt;
-            if(Math.abs(this.velX) > this.MAX_VEL)
-                this.velX = Math.sign(this.velX) * this.MAX_VEL;
+            Googooli.velX += Googooli.accelX * Googooli.ACCEL * dt;
+            if(Math.abs(Googooli.velX) > Googooli.MAX_VEL)
+                Googooli.velX = Math.sign(Googooli.velX) * Googooli.MAX_VEL;
         }
         else
         {
-            if(Math.abs(this.velX) < this.FRICTION * dt)
-                this.velX = 0;
-            this.velX -= Math.sign(this.velX) * this.FRICTION * dt;
+            if(Math.abs(Googooli.velX) < Googooli.FRICTION * dt)
+                Googooli.velX = 0;
+            Googooli.velX -= Math.sign(Googooli.velX) * Googooli.FRICTION * dt;
         }
 
         /* update velY */
-        if(this.accelY)
+        if(Googooli.accelY)
         {
-            this.velY += this.accelY * this.ACCEL * dt;
-            if(Math.abs(this.velY) > this.MAX_VEL)
-                this.velY = Math.sign(this.velY) * this.MAX_VEL;
+            Googooli.velY += Googooli.accelY * Googooli.ACCEL * dt;
+            if(Math.abs(Googooli.velY) > Googooli.MAX_VEL)
+                Googooli.velY = Math.sign(Googooli.velY) * Googooli.MAX_VEL;
         }
         else
         {
-            if(Math.abs(this.velY) < this.FRICTION * dt)
-                this.velY = 0;
-            this.velY -= Math.sign(this.velY) * this.FRICTION * dt;
+            if(Math.abs(Googooli.velY) < Googooli.FRICTION * dt)
+                Googooli.velY = 0;
+            Googooli.velY -= Math.sign(Googooli.velY) * Googooli.FRICTION * dt;
         }
 
-        this.x += this.velX * dt;
-        this.y += this.velY * dt;
-        if(this.checkCollision())
+        var prevRow = Googooli.row;
+        if(Googooli.velX > 7)
+        {
+            Googooli.row = 2;
+            if(Googooli.checkCollision())
+                Googooli.row = prevRow;
+        }
+        else if(Googooli.velX < -7)
+        {
+            Googooli.row = 0;
+            if(Googooli.checkCollision())
+                Googooli.row = prevRow;
+        }
+        else
+        {
+            Googooli.row = 1;
+            if(Googooli.checkCollision())
+                Googooli.row = prevRow;
+        }
+
+        Googooli.x += Googooli.velX * dt;
+        Googooli.y += Googooli.velY * dt;
+        if(Googooli.checkCollision())
         {
             /* Try moving along Y only. */
-            this.x -= this.velX * dt;
-            var tmp = this.velX;
-            this.velX = 0;
-            if(this.checkCollision())
+            Googooli.x -= Googooli.velX * dt;
+            var tmp = Googooli.velX;
+            Googooli.velX = 0;
+            if(Googooli.checkCollision())
             {
                 /* Try moving along X only. */
-                this.x += this.velX * dt;
-                this.y -= this.velY * dt;
-                this.velX = tmp;
-                this.velY = 0;
-                if(this.checkCollision())
+                Googooli.x += Googooli.velX * dt;
+                Googooli.y -= Googooli.velY * dt;
+                Googooli.velX = tmp;
+                Googooli.velY = 0;
+                if(Googooli.checkCollision())
                 {
                     /* Don't move at all. */
-                    this.x -= this.velX * dt;
-                    this.velX = 0;
+                    Googooli.x -= Googooli.velX * dt;
+                    Googooli.velX = 0;
                 }
             }
         }
 
-        Camera.teleport(this.x, this.y);
+        /* if ( Googooli is dead ) */
+        if(Googooli.col === 2)
+            return;
+
+        if(!Googooli.blinkTimeStamp && Math.random() < 0.005)
+        {
+            Googooli.blinkTimeStamp = now;
+            Googooli.col = 0;
+        }
+        else if(now - Googooli.blinkTimeStamp > 400)
+        {
+            Googooli.blinkTimeStamp = 0;
+            Googooli.col = 1;
+        }
+
+        Camera.teleport(Googooli.x, Googooli.y);
         GraphicsManager.renderLevel();
 
         var level = Worlds[GameManager.world].levels[GameManager.level];
         var finishNode = level.nodes[level.finish];
         if(GameManager.timer.running &&
-            Math.distance(this.x, this.y, finishNode.x, finishNode.y) < finishNode.radius * 4 / 5)
+            Geometry.distance(Googooli.x, Googooli.y, finishNode.x, finishNode.y) < finishNode.radius * 4 / 5)
         {
             GameManager.timer.stop();
+            Controller.turnOff();
             GameManager.gotoPRIZE();
         }
     },
 
     teleport: function(x, y)
     {
-        this.x = x;
-        this.y = y;
+        Googooli.x = x;
+        Googooli.y = y;
     },
 
     checkCollision: function()
     {
-        var collisionData = this.collisionImageData.data;
-        var imageData = this.imageData.data;
-        for(var dx = 0; dx < this.image.width; ++dx)
-            for(var dy = 0; dy < this.image.height; ++dy)
-            {
-                var x = Math.floor(this.x - this.WIDTH / 2 + dx);
-                var y = Math.floor(this.y - this.HEIGHT / 2 + dy);
-                /* check if both are opaque */
-                if(collisionData[4 * (y * this.collisionImageData.width + x) + 3] > 10 && imageData[4 * (dy * this.image.width + dx) + 3] > 10)
-                    return true;
-            }
-        return false;
-    }
-};
+        var data = Googooli.datas[Googooli.row][Googooli.col].data;
 
-Math.distance = function(x1, y1, x2, y2)
-{
-    return Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+        Googooli.helpContext.clearRect(0, 0, Googooli.WIDTH, Googooli.HEIGHT);
+        Googooli.helpContext.drawImage(Googooli.wallsContext.canvas, Googooli.x - Googooli.WIDTH / 2, Googooli.y - Googooli.HEIGHT / 2,
+            Googooli.WIDTH, Googooli.HEIGHT, 0, 0, Googooli.WIDTH, Googooli.HEIGHT)
+        var wallsData = Googooli.helpContext.getImageData(0, 0, Googooli.WIDTH, Googooli.HEIGHT).data;
+
+        var enemiesData = GraphicsManager.enemiesContext.getImageData(
+            Googooli.x - Camera.x + Camera.width / 2 - Googooli.WIDTH / 2,
+            Googooli.y - Camera.y + Camera.height / 2 - Googooli.HEIGHT / 2,
+            Googooli.WIDTH, Googooli.HEIGHT).data;
+
+        var hitWall = false;
+        for(var y = 0; y < Googooli.HEIGHT; ++y)
+            for(var x = 0; x < Googooli.WIDTH; ++x)
+            {
+                /* check Googooli presence */
+                if(data[4 * (y * Googooli.WIDTH + x) + 3] <= 10)
+                    continue;
+                /* check wall presence */
+                if(!hitWall && wallsData[4 * (y * Googooli.WIDTH + x) + 3] > 10)
+                    hitWall = true;
+                /* check enemy presence */
+                if(enemiesData[4 * (y * Googooli.WIDTH + x) + 3] > 10)
+                    Googooli.die();
+            }
+        return hitWall;
+    }
 };

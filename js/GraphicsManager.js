@@ -14,48 +14,48 @@ var GraphicsManager = {
 
     init: function()
     {
-        this.levelselContext = this.createCanvas("levelselCanvas").getContext("2d");
-        this.levelselContext.canvas.style["z-index"] = 2;
+        GraphicsManager.levelselContext = GraphicsManager.createCanvas("levelselCanvas").getContext("2d");
+        GraphicsManager.levelselContext.canvas.style["z-index"] = 2;
 
-        this.worldselContext = this.createCanvas("worldselCanvas").getContext("2d");
-        this.worldselContext.canvas.style["z-index"] = 2;
+        GraphicsManager.worldselContext = GraphicsManager.createCanvas("worldselCanvas").getContext("2d");
+        GraphicsManager.worldselContext.canvas.style["z-index"] = 2;
 
-        this.introContext = this.createCanvas("introCanvas").getContext("2d");
-        this.introContext.canvas.style["z-index"] = 2;
+        GraphicsManager.introContext = GraphicsManager.createCanvas("introCanvas").getContext("2d");
+        GraphicsManager.introContext.canvas.style["z-index"] = 2;
 
-        this.levelContext = this.createCanvas("levelCanvas").getContext("2d");
-        this.levelContext.canvas.style["z-index"] = 0;
+        GraphicsManager.levelContext = GraphicsManager.createCanvas("levelCanvas").getContext("2d");
+        GraphicsManager.levelContext.canvas.style["z-index"] = 0;
 
-        this.googooliContext = this.createCanvas("googooliCanvas").getContext("2d");
-        this.googooliContext.canvas.style["z-index"] = 1;
+        GraphicsManager.enemiesContext = GraphicsManager.createCanvas("enemiesCanvas").getContext("2d");
+        GraphicsManager.enemiesContext.canvas.style["z-index"] = 1;
 
-        this.enemiesContext = this.createCanvas("enemiesCanvas").getContext("2d");
-        this.enemiesContext.canvas.style["z-index"] = 1;
+        GraphicsManager.googooliContext = GraphicsManager.createCanvas("googooliCanvas").getContext("2d");
+        GraphicsManager.googooliContext.canvas.style["z-index"] = 1;
 
-        this.guiContext = this.createCanvas("guiCanvas").getContext("2d");
-        this.guiContext.canvas.style["z-index"] = 2;
+        GraphicsManager.guiContext = GraphicsManager.createCanvas("guiCanvas").getContext("2d");
+        GraphicsManager.guiContext.canvas.style["z-index"] = 2;
 
-        this.overlayContext = this.createCanvas("overlayCanvas").getContext("2d");
-        this.overlayContext.canvas.style["z-index"] = 3;
+        GraphicsManager.overlayContext = GraphicsManager.createCanvas("overlayCanvas").getContext("2d");
+        GraphicsManager.overlayContext.canvas.style["z-index"] = 3;
 
-        this.prizeContext = this.createCanvas("prizeCanvas").getContext("2d");
-        this.prizeContext.canvas.style["z-index"] = 4;
+        GraphicsManager.prizeContext = GraphicsManager.createCanvas("prizeCanvas").getContext("2d");
+        GraphicsManager.prizeContext.canvas.style["z-index"] = 4;
 
-        this.calcMaxCssZoom();
-        this.fitScreen();
+        GraphicsManager.calcMaxCssZoom();
+        GraphicsManager.fitScreen();
     },
 
     calcMaxCssZoom: function()
     {
-        this.maxCssZoom = Math.min(screen.width / this.CANVAS_WIDTH,
-            screen.height / this.CANVAS_HEIGHT);
+        GraphicsManager.maxCssZoom = Math.min(screen.width / GraphicsManager.CANVAS_WIDTH,
+            screen.height / GraphicsManager.CANVAS_HEIGHT);
     },
 
     createCanvas: function(id)
     {
         var canvas = document.createElement("canvas");
-        canvas.width = this.CANVAS_WIDTH;
-        canvas.height = this.CANVAS_HEIGHT;
+        canvas.width = GraphicsManager.CANVAS_WIDTH;
+        canvas.height = GraphicsManager.CANVAS_HEIGHT;
         canvas.id = id;
         document.body.appendChild(canvas);
         return canvas;
@@ -79,7 +79,7 @@ var GraphicsManager = {
                 canvas.style.height = window.innerWidth * canvas.height / canvas.width - 1 + "px";
             }
         }
-        this.cssZoom = canvasList[0].style.width.replace("px", "") / canvasList[0].width;
+        GraphicsManager.cssZoom = canvasList[0].style.width.replace("px", "") / canvasList[0].width;
     },
 
     clearScreen: function()
@@ -97,20 +97,23 @@ var GraphicsManager = {
 
     renderINTRO: function()
     {
-        var ctx = this.introContext;
+        var ctx = GraphicsManager.introContext;
         ctx.save();
-        ctx.fillStyle = "rgba(50, 100, 150, 1)";
+
+        var pattern = ctx.createPattern(document.getElementById("illusion"), "repeat");
+        ctx.fillStyle = pattern;
         ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
         ctx.textAlign = "center";
-        ctx.fillStyle = "black";
+        ctx.fillStyle = "rgba(241, 192, 21, 0.8)";
         ctx.font = "italic 50px 'Comic Sans MS'";
         ctx.fillText("Googooli", ctx.canvas.width / 2, ctx.canvas.height * 1 / 6);
-        
+
         var button = new Button(ctx, ctx.canvas.width / 2, ctx.canvas.height / 2, function()
         {
+            SoundManager.playClick();
             Button.clearListening();
-            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+            GraphicsManager.clearCanvas(this.ctx);
             GameManager.gotoWORLDSEL();
         });
         button.icon = document.getElementById("play");
@@ -123,10 +126,11 @@ var GraphicsManager = {
 
     renderWORLDSEL: function()
     {
-        var ctx = this.worldselContext;
+        var ctx = GraphicsManager.worldselContext;
         ctx.save();
-        
-        ctx.fillStyle = "rgba(50, 100, 150, 1)";
+
+        var pattern = ctx.createPattern(document.getElementById("illusion"), "repeat");
+        ctx.fillStyle = pattern;
         ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
         for(var i = 0; i < Worlds.length; ++i)
@@ -138,7 +142,8 @@ var GraphicsManager = {
                     SoundManager.playError();
                     return;
                 }
-                
+
+                SoundManager.playClick();
                 Button.clearListening();
                 GraphicsManager.clearCanvas(GraphicsManager.worldselContext);
                 GameManager.world = this.data;
@@ -155,8 +160,9 @@ var GraphicsManager = {
             button.show();
         }
 
-        this.renderBack(ctx, function()
+        GraphicsManager.renderBack(ctx, function()
         {
+            SoundManager.playClick();
             Button.clearListening();
             GraphicsManager.clearCanvas(GraphicsManager.worldselContext);
             GameManager.gotoINTRO();
@@ -167,14 +173,17 @@ var GraphicsManager = {
 
     renderLEVELSEL: function()
     {
-        var ctx = this.levelselContext;
+        var ctx = GraphicsManager.levelselContext;
         ctx.save();
-        ctx.fillStyle = "rgba(50, 100, 150, 1)";
+
+        var pattern = ctx.createPattern(document.getElementById("illusion"), "repeat");
+        ctx.fillStyle = pattern;
         ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
         var world = GameManager.world;
         var n = Worlds[world].levels.length;
 
-        for(var i = 0; i < Worlds[world].levels.length; ++i)
+        for(var i = 0; i < n; ++i)
         {
             var button = new Button(ctx, ctx.canvas.width * (i + 1) / (n + 1), ctx.canvas.height / 2, function()
             {
@@ -184,24 +193,35 @@ var GraphicsManager = {
                 }
                 else
                 {
+                    SoundManager.playClick();
                     Button.clearListening();
                     GraphicsManager.clearCanvas(this.ctx);
-                    GameManager.level = this.data;
+                    GameManager.level = this.text - 1;
                     GameManager.gotoPLAY();
                 }
             });
-            button.data = i;
+            // button.data = i;
             button.locked = !Persistent.data.worlds[world].levels[i];
             if(button.locked)
                 button.icon = document.getElementById("locked");
+            else
+            {
+                var levelData = Worlds[GameManager.world].levels[GameManager.level];
+                var time = Persistent.data.worlds[world].levels[i].highscore / 1000;
+                if(time <= levelData.gold) button.icon = document.getElementById("gold");
+                else if(time <= levelData.silver) button.icon = document.getElementById("silver");
+                else if(time <= levelData.bronze) button.icon = document.getElementById("bronze");
+                else button.icon = document.getElementById("carrot");
+            }
             button.width = ctx.canvas.width / (n + 1) - 10;
             button.height = ctx.canvas.height / 3;
             button.text = i + 1;
             button.show();
         }
 
-        this.renderBack(ctx, function()
+        GraphicsManager.renderBack(ctx, function()
         {
+            SoundManager.playClick();
             GraphicsManager.clearCanvas(GraphicsManager.levelselContext);
             Button.clearListening();
             GameManager.gotoWORLDSEL();
@@ -212,27 +232,37 @@ var GraphicsManager = {
 
     renderPLAY: function()
     {
-        this.renderLevel();
-        this.startRenderingGoogooli();
-        this.renderTime(GameManager.timer.getTime());
-        this.renderGuiButtons();
+        GraphicsManager.renderLevel();
+        GraphicsManager.startRenderingGoogooli();
+        GraphicsManager.renderTime(GameManager.timer.getTime());
+        GraphicsManager.renderGuiButtons();
     },
 
     renderPRIZE: function(newHighscore)
     {
-        var ctx = this.prizeContext;
+        var ctx = GraphicsManager.prizeContext;
         ctx.save();
+
         var width = 200;
         var height = 200;
         ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
-        ctx.fillRect(ctx.canvas.width / 2 - width / 2,
+        Graphics.roundedRect(ctx,
+            ctx.canvas.width / 2 - width / 2,
             ctx.canvas.height / 2 - height / 2,
-            width, height);
-        var goldImg = document.getElementById("gold");
-        ctx.drawImage(goldImg,
-            ctx.canvas.width / 2 - goldImg.width / 2,
-            ctx.canvas.height / 2 - goldImg.height / 2 - 100,
-            goldImg.width, goldImg.height);
+            width, height, 5);
+        ctx.fill();
+
+        var levelData = Worlds[GameManager.world].levels[GameManager.level];
+        var time = GameManager.timer.getTime() / 1000;
+        var prizeImg = null;
+        if(time <= levelData.gold) prizeImg = document.getElementById("gold");
+        else if(time <= levelData.silver) prizeImg = document.getElementById("silver");
+        else if(time <= levelData.bronze) prizeImg = document.getElementById("bronze");
+        else prizeImg = document.getElementById("carrot");
+        ctx.drawImage(prizeImg,
+            ctx.canvas.width / 2 - prizeImg.width / 2,
+            ctx.canvas.height / 2 - prizeImg.height / 2 - 100,
+            prizeImg.width, prizeImg.height);
 
         ctx.fillStyle = "white";
         ctx.textAlign = "center";
@@ -245,6 +275,7 @@ var GraphicsManager = {
 
         var nextButton = new Button(ctx, ctx.canvas.width / 2, ctx.canvas.height * 2 / 3 + 15, function()
         {
+            SoundManager.playClick();
             Googooli.reset();
             GameManager.timer.reset();
             GraphicsManager.stopRenderingTime();
@@ -264,7 +295,7 @@ var GraphicsManager = {
                     GameManager.world = 0;
                     console.log("Congratulations!");
                 }
-            }   
+            }
             GameManager.gotoPLAY();
         });
         nextButton.icon = document.getElementById("play");
@@ -275,15 +306,36 @@ var GraphicsManager = {
         ctx.restore();
     },
 
+    renderGameover: function()
+    {
+        var ctx = GraphicsManager.guiContext;
+        ctx.save();
+        
+        ctx.font = "Bold 70px Georgia";
+        var width = ctx.measureText("GAMEOVER").width;
+        ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
+        Graphics.roundedRect(ctx,
+            ctx.canvas.width / 2 - width / 2 - 5,
+            ctx.canvas.height / 2 - 40, width + 10, 80, 5);
+        ctx.fill();
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillStyle = "rgba(255, 0, 0, 0.7)";
+        ctx.fillText("GAMEOVER", ctx.canvas.width / 2, ctx.canvas.height / 2);
+        
+        ctx.restore();
+    },
+
     /* GUI BUTTONS */
 
     renderGuiButtons: function()
     {
-        var ctx = this.guiContext;
+        var ctx = GraphicsManager.guiContext;
         ctx.save();
 
-        this.renderBack(ctx, function()
+        GraphicsManager.renderBack(ctx, function()
         {
+            SoundManager.playClick();
             Googooli.reset();
             GameManager.timer.stop();
             GraphicsManager.stopRenderingTime();
@@ -296,6 +348,7 @@ var GraphicsManager = {
 
         var replayButton = new Button(ctx, ctx.canvas.width - 55, 20, function()
         {
+            SoundManager.playClick();
             Googooli.reset();
             GameManager.timer.stop();
             GraphicsManager.stopRenderingTime();
@@ -312,6 +365,7 @@ var GraphicsManager = {
 
         var pauseButton = new Button(ctx, ctx.canvas.width - 90, 20, function()
         {
+            SoundManager.playClick();
             this.unlisten();
             this.clear();
             playButton.show();
@@ -335,6 +389,7 @@ var GraphicsManager = {
 
         var playButton = new Button(ctx, ctx.canvas.width - 90, 20, function()
         {
+            SoundManager.playClick();
             this.unlisten();
             this.clear();
             pauseButton.show();
@@ -354,6 +409,18 @@ var GraphicsManager = {
         playButton.width = 30;
         playButton.height = 30;
 
+        if('ontouchstart' in document.documentElement ||
+            (window.navigator.maxTouchPoints && window.navigator.maxTouchPoints > 1))
+        {
+            GraphicsManager.guiContext.drawImage(document.getElementById("leftShaded"),
+                50 - 37, GraphicsManager.guiContext.canvas.height - 65);
+            GraphicsManager.guiContext.drawImage(document.getElementById("rightShaded"),
+                50 - 0, GraphicsManager.guiContext.canvas.height - 65);
+            GraphicsManager.guiContext.drawImage(document.getElementById("upShaded"),
+                GraphicsManager.guiContext.canvas.width - 65, GraphicsManager.guiContext.canvas.height - 50 - 37);
+            GraphicsManager.guiContext.drawImage(document.getElementById("downShaded"),
+                GraphicsManager.guiContext.canvas.width - 65, GraphicsManager.guiContext.canvas.height - 50);
+        }
         ctx.restore();
     },
 
@@ -370,28 +437,28 @@ var GraphicsManager = {
 
     renderLevel: function()
     {
-        this.levelContext.clearRect(0, 0, this.levelContext.canvas.width, this.levelContext.canvas.height);
-        this._render(GameManager.levelImage, this.levelContext, Camera);
+        GraphicsManager.levelContext.clearRect(0, 0, GraphicsManager.levelContext.canvas.width, GraphicsManager.levelContext.canvas.height);
+        GraphicsManager._render(GameManager.levelImage, GraphicsManager.levelContext, Camera);
     },
 
     /* ENEMIES */
 
     renderEnemies: function()
     {
-        var ctx = this.enemiesContext;
+        var ctx = GraphicsManager.enemiesContext;
         ctx.save();
-        
-        this.clearCanvas(ctx);
-        this.enemyImageIdx = (this.enemyImageIdx + 1) % Enemies.images.length;
+
+        GraphicsManager.clearCanvas(ctx);
+        GraphicsManager.enemyImageIdx = (GraphicsManager.enemyImageIdx + 1) % Enemies.images.length;
         for(var i = 0; i < Enemies.data.length; ++i)
         {
             var enemy = Enemies.data[i];
-            var img = Enemies.images[this.enemyImageIdx];
-            var x = ctx.canvas.width  / 2 + enemy.x - Camera.x - 32;
+            var img = Enemies.images[GraphicsManager.enemyImageIdx];
+            var x = ctx.canvas.width / 2 + enemy.x - Camera.x - 32;
             var y = ctx.canvas.height / 2 + enemy.y - Camera.y - 32;
             ctx.drawImage(img, x, y);
         }
-        
+
         ctx.restore();
     },
 
@@ -399,68 +466,68 @@ var GraphicsManager = {
 
     clearGoogooli: function()
     {
-        if(!this.googooliPrevX)
+        if(!GraphicsManager.googooliPrevX)
             return;
-        var ctx = this.googooliContext;
-        ctx.clearRect(this.googooliPrevX, this.googooliPrevY, Googooli.image.width, Googooli.image.height);
+        var ctx = GraphicsManager.googooliContext;
+        ctx.clearRect(GraphicsManager.googooliPrevX, GraphicsManager.googooliPrevY, Googooli.WIDTH, Googooli.HEIGHT);
     },
 
     startRenderingGoogooli: function()
     {
-        if(!this.googooliRequestID)
-            this.requestGoogooliRender();
+        if(!GraphicsManager.googooliRequestID)
+            GraphicsManager.requestGoogooliRender();
     },
 
     stopRenderingGoogooli: function()
     {
-        if(this.googooliRequestID)
+        if(GraphicsManager.googooliRequestID)
         {
-            window.cancelAnimationFrame(this.googooliRequestID);
-            this.googooliRequestID = 0;
+            window.cancelAnimationFrame(GraphicsManager.googooliRequestID);
+            GraphicsManager.googooliRequestID = 0;
         }
     },
 
     renderGoogooli: function()
     {
-        this.clearGoogooli();
-        var ctx = this.googooliContext;
+        GraphicsManager.clearGoogooli();
+        var ctx = GraphicsManager.googooliContext;
         var dx = Math.floor(ctx.canvas.width / 2 + (Googooli.x - Camera.x) - Googooli.WIDTH / 2);
         var dy = Math.floor(ctx.canvas.height / 2 + (Googooli.y - Camera.y) - Googooli.HEIGHT / 2);
-        ctx.drawImage(Googooli.image, dx, dy);
-        this.googooliPrevX = dx;
-        this.googooliPrevY = dy;
+        ctx.drawImage(Googooli.images[Googooli.row][Googooli.col], dx, dy);
+        GraphicsManager.googooliPrevX = dx;
+        GraphicsManager.googooliPrevY = dy;
     },
 
     requestGoogooliRender: function()
     {
-        this.googooliRequestID = window.requestAnimationFrame(function()
+        GraphicsManager.googooliRequestID = window.requestAnimationFrame(function()
         {
             GraphicsManager.requestGoogooliRender();
         });
-        this.renderGoogooli();
+        GraphicsManager.renderGoogooli();
     },
 
     /* TIME */
 
     startRenderingTime: function()
     {
-        if(!this.timeRequestID)
-            this.requestTimeRender();
+        if(!GraphicsManager.timeRequestID)
+            GraphicsManager.requestTimeRender();
     },
 
     stopRenderingTime: function()
     {
-        if(this.timeRequestID)
+        if(GraphicsManager.timeRequestID)
         {
-            window.cancelAnimationFrame(this.timeRequestID);
-            this.timeRequestID = 0;
+            window.cancelAnimationFrame(GraphicsManager.timeRequestID);
+            GraphicsManager.timeRequestID = 0;
         }
     },
 
     renderTime: function(time)
     {
-        this.clearTime();
-        var ctx = this.guiContext;
+        GraphicsManager.clearTime();
+        var ctx = GraphicsManager.guiContext;
         var timer = Timer.format(time);
         // console.log(timer);
 
@@ -468,29 +535,30 @@ var GraphicsManager = {
         ctx.font = "20px serif";
         var width = ctx.measureText(timer).width;
         ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
-        ctx.fillRect(15, 10, width + 10, 25);
+        Graphics.roundedRect(ctx, 5, 5, width + 10, 25, 5);
+        ctx.fill();
         ctx.fillStyle = "white";
-        ctx.fillText(timer, 20, 30);
+        ctx.fillText(timer, 10, 25);
         ctx.restore();
     },
 
     clearTime: function()
     {
-        var ctx = this.guiContext;
+        var ctx = GraphicsManager.guiContext;
         ctx.save();
         ctx.font = "20px serif";
         var width = ctx.measureText("0000000000:00:000").width;
-        ctx.clearRect(15, 10, width + 15, 30);
+        ctx.clearRect(5, 5, width + 10, 25);
         ctx.restore();
     },
 
     requestTimeRender: function()
     {
-        this.timeRequestID = window.requestAnimationFrame(function()
+        GraphicsManager.timeRequestID = window.requestAnimationFrame(function()
         {
             GraphicsManager.requestTimeRender();
         });
-        this.renderTime(GameManager.timer.getTime());
+        GraphicsManager.renderTime(GameManager.timer.getTime());
     },
 
     /* MASTER RENDERER */
@@ -516,62 +584,4 @@ var GraphicsManager = {
     {
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     }
-};
-
-/* A Masterpiece! - highly efficient code */
-/* gradually changes opacity to [finalOp] during [time] miliseconds */
-CanvasRenderingContext2D.prototype.opacitate = function(finalOp, time)
-{
-    var ctx = this;
-    var canvas = ctx.canvas;
-    
-    /* Just in case */
-    if( isNaN(time) )
-    {
-        console.log("ERROR: time is NaN. Falling back to [AnimTime].");
-        time = AnimTime;
-    }
-    
-    if(this.opacitateStartTime === undefined)
-    {
-        /* threshold */
-        time -= 40;
-        /* this is done in first call to function */
-        if(canvas.style.opacity === "") canvas.style.opacity = 1;
-        this.opacitateTimeStamp = this.opacitateStartTime = new Date().getTime();
-        this.opacitateRequestID = requestAnimationFrame(function() {ctx.opacitate(finalOp, time);});
-    }
-    else
-    {
-        /* mark time */
-        var clock = new Date().getTime();
-        /* previous cycle */
-        var prevRemTime = time - this.opacitateTimeStamp + this.opacitateStartTime;
-        var prevRemOp = finalOp - canvas.style.opacity;
-        /* current cycle */
-        var curRemTime = time - clock + this.opacitateStartTime;
-        var curRemOp = curRemTime * prevRemOp / prevRemTime;
-        /* calculate opacity */
-        canvas.style.opacity = finalOp - curRemOp;
-        /* update timeStamp */
-        this.opacitateTimeStamp = clock;
-        
-        if(curRemTime <= 0)
-        {
-            canvas.style.opacity = finalOp;
-            this.opacitateStartTime = undefined;
-            cancelAnimationFrame(this.opacitateRequestID);
-        }
-        else
-            this.opacitateRequestID = requestAnimationFrame(function() {ctx.opacitate(finalOp, time);});
-    }
-};
-
-CanvasRenderingContext2D.prototype.fadeout = function(time)
-{
-    var ctx = this;
-    var canvas = ctx.canvas;
-    ctx.opacitate(0, time - 30);
-    window.setTimeout(function() {ctx.clearRect(0, 0, canvas.width, canvas.height);
-        canvas.style.opacity = 1;}, time - 30);
 };

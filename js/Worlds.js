@@ -651,8 +651,7 @@ var Worlds =
 						y: -1300,
 						radius: 70,
 						links: []
-					},
-				
+					}
 				],
 
 				start: 0,
@@ -845,17 +844,16 @@ var Worlds =
 				],
 
 				start: 0,
-				finish: 20,
-				
+				finish: 20
 			}
 		]
 	},
 
 	/* 1 */
 	{
-        name: "The Woods",
-        bg: "hixs",
-        fg: "hex",
+        name: "On Brick Walls",
+        bg: "darkBricks",
+        fg: "whiteBricks",
 
         levels:
         [
@@ -904,7 +902,11 @@ var Worlds =
                 ],
 
                 start: 0,
-                finish: 1
+                finish: 1,
+
+                gold: 5,
+                silver: 6,
+                bronze: 7
             }
         ]
     },
@@ -918,8 +920,8 @@ var Worlds =
 
     /* 3 */
     {
-        name: "On Brick Walls",
-        bg: "darkBricks",
-        fg: "whiteBricks"
+        name: "The Woods",
+        bg: "hixs",
+        fg: "hex"
     }
 ];

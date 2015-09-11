@@ -1,5 +1,5 @@
 /* static constants */
-Button.DEF_WIDTH  = 100;
+Button.DEF_WIDTH = 100;
 Button.DEF_HEIGHT = 100;
 
 /**
@@ -7,164 +7,155 @@ Button.DEF_HEIGHT = 100;
  */
 function Button(ctx, x, y, job)
 {
-	this.ctx = ctx;
-	this.x = x;
-	this.y = y;
-	/* the functionality of the button */
-	this.job = job;
-	
-	/* API */
-	this.icon = null;
-	this.text = null;
-	this.width  = Button.DEF_WIDTH;
-	this.height = Button.DEF_HEIGHT;
+    this.ctx = ctx;
+    this.x = x;
+    this.y = y;
+    /* the functionality of the button */
+    this.job = job;
+
+    /* API */
+    this.icon = null;
+    this.text = null;
+    this.width = Button.DEF_WIDTH;
+    this.height = Button.DEF_HEIGHT;
 }
 
 Button.prototype =
 {
-	show: function(ctx)
-	{
-		var ctx = this.ctx;
-		ctx.save();
-		ctx.fillStyle = "rgba(241, 192, 21, 0.8)";
-		ctx.roundedRect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height, 5);
-		ctx.fill();
-		
-		ctx.fillStyle = "black";
-		ctx.textAlign = "center";
-		ctx.textBaseline = "middle";
-		ctx.font = "italic " + Math.floor(this.height / 3) + "px 'Comic Sans MS'";
-		
-		if(this.icon && this.text)
-		{
-			var dw = Math.min( this.width , this.icon.width );
-			var dh = Math.min( this.height, this.icon.height);
-			ctx.drawImage(this.icon,
-				Math.floor( this.x - dw / 2 ),
-				Math.floor( this.y + this.height / 4 - dh / 2 ),
-				dw, dh);
-			ctx.fillText(this.text, this.x, this.y - this.height / 4);
-		}
-		else if(this.icon)
-		{
-			var dw = Math.min( this.width , this.icon.width );
-			var dh = Math.min( this.height, this.icon.height);
-			ctx.drawImage(this.icon,
-				Math.floor( this.x - dw / 2 ),
-				Math.floor( this.y - dh / 2 ),
-				dw, dh);
-		}
-		else if(this.text)
-		{
-			ctx.fillText(this.text, this.x, this.y);
-		}
-		ctx.restore();
-		this.listen();
-	},
+    show: function(ctx)
+    {
+        var ctx = this.ctx;
+        ctx.save();
+        ctx.fillStyle = "rgba(241, 192, 21, 0.8)";
+        Graphics.roundedRect(ctx,
+            this.x - this.width / 2, this.y - this.height / 2,
+            this.width, this.height, 5);
+        ctx.fill();
 
-	clear: function()
-	{
-		this.ctx.clearRect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height);
-	},
+        ctx.fillStyle = "black";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.font = "italic " + Math.floor(this.height / 3) + "px 'Comic Sans MS'";
 
-	listen: function()
-	{
-		Button.listening.add(this);
-	},
+        if(this.icon && this.text)
+        {
+            var zoom = Math.min(this.width * 4 / 5 / this.icon.width, this.height * 2 / 5 / this.icon.height);
+            var dw = zoom * this.icon.width;
+            var dh = zoom * this.icon.height;
+            ctx.drawImage(this.icon,
+                Math.floor(this.x - dw / 2),
+                Math.floor(this.y + this.height / 4 - dh / 2),
+                dw, dh);
+            ctx.fillText(this.text, this.x, this.y - this.height / 4);
+        }
+        else if(this.icon)
+        {
+            var dw = Math.min(this.width, this.icon.width);
+            var dh = Math.min(this.height, this.icon.height);
+            ctx.drawImage(this.icon,
+                Math.floor(this.x - dw / 2),
+                Math.floor(this.y - dh / 2),
+                dw, dh);
+        }
+        else if(this.text)
+        {
+            ctx.fillText(this.text, this.x, this.y);
+        }
+        ctx.restore();
+        this.listen();
+    },
 
-	unlisten: function()
-	{
-		for(var i = Button.listening.begin; i != null; i = i.next)
-			if(i.data === this)
-				Button.listening.del(i);
-	},
+    clear: function()
+    {
+        this.ctx.clearRect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height);
+    },
 
-	covers: function(x, y)
-	{
-		return (this.x - this.width / 2 <= x && x <= this.x + this.width / 2 &&
-			this.y - this.height / 2 <= y && y <= this.y + this.height / 2);
-	}
+    listen: function()
+    {
+        Button.listening.add(this);
+    },
+
+    unlisten: function()
+    {
+        for(var i = Button.listening.begin; i != null; i = i.next)
+            if(i.data === this)
+                Button.listening.del(i);
+    },
+
+    covers: function(x, y)
+    {
+        return(this.x - this.width / 2 <= x && x <= this.x + this.width / 2 &&
+            this.y - this.height / 2 <= y && y <= this.y + this.height / 2);
+    }
 };
 
 Button.listening = new LinkedList();
 
 Button.clearListening = function()
 {
-	Button.listening.begin = null;
+    Button.listening.begin = null;
 };
 
 Button.mouseup = function(event)
 {
-	// console.log(event);
-
-	for(var i = Button.listening.begin; i != null; i = i.next)
-	{
-		var button = i.data;
-		var p = getCanvasXY(button.ctx.canvas, event);
-		
-		// console.log(button);
-		
-		if(button.covers(p.x, p.y))
-		{
-			// console.log("covers!");
-			button.job();
-		}
-	}
+    for(var i = Button.listening.begin; i != null; i = i.next)
+    {
+        var button = i.data;
+        var p = EventManager.getCanvasXY(button.ctx.canvas, event);
+        if(button.covers(p.x, p.y))
+            button.job();
+    }
 };
 
-function getCanvasXY(canvas, event)
+Button.mousedown = function(event)
 {
-	var clientX, clientY;
-	if(event.clientX)
-	{
-		/* mouse click */
-		clientX = event.clientX;
-		clientY = event.clientY;
-	}
-	else if(event.touches && event.touches.length)
-	{
-		/* touchstart */
-		clientX = event.touches[event.touches.length - 1].clientX;
-		clientY = event.touches[event.touches.length - 1].clientY;
-	}
-	else
-	{
-		/* touchend */
-		clientX = event.changedTouches[0].clientX;
-		clientY = event.changedTouches[0].clientY;
-	}
-	var rect = canvas.getBoundingClientRect();
-	var x = clientX - rect.left;
-	var y = clientY - rect.top;
-	x = x * canvas.width / canvas.style.width.replace("px", "");
-	y = y * canvas.height / canvas.style.height.replace("px", "");
-	return {x:x, y:y};
-}
+    
+};
 
-if('ontouchstart' in document.documentElement ||
-	(window.navigator.maxTouchPoints && window.navigator.maxTouchPoints > 1))
+Button.mousemove = function(event)
 {
-	/* touch */
-	window.addEventListener("touchend", function(event) {Button.mouseup(event);});
-}
-else
-{
-	/* mouse */
-	window.addEventListener("mouseup", function(event) {Button.mouseup(event);});
-}
+    for(var i = Button.listening.begin; i != null; i = i.next)
+    {
+        var button = i.data;
+        var p = EventManager.getCanvasXY(button.ctx.canvas, event);
+        if(button.covers(p.x, p.y))
+        {
+            document.body.style.cursor = "pointer";
+            return;
+        }
+    }
+    document.body.style.cursor = "default";
+};
 
-/* creates a rectangle with rounded corners */
-CanvasRenderingContext2D.prototype.roundedRect = function(x, y, width, height, radius)
+Button.addEventListeners = function()
 {
-    var ctx = this;
-    ctx.beginPath();
-    ctx.moveTo(x, y + radius);
-    ctx.lineTo(x, y + height - radius);
-    ctx.quadraticCurveTo(x, y + height, x + radius, y + height);
-    ctx.lineTo(x + width - radius, y + height);
-    ctx.quadraticCurveTo(x + width, y + height, x + width, y + height - radius);
-    ctx.lineTo(x + width, y + radius);
-    ctx.quadraticCurveTo(x + width, y, x + width - radius, y);
-    ctx.lineTo(x + radius, y);
-    ctx.quadraticCurveTo(x, y, x, y + radius);
+    if('ontouchstart' in document.documentElement ||
+        (window.navigator.maxTouchPoints && window.navigator.maxTouchPoints > 1))
+    {
+        /* touch */
+        window.addEventListener("touchstart", function(event)
+        {
+            Button.mousedown(event);
+        });
+        window.addEventListener("touchend", function(event)
+        {
+            Button.mouseup(event);
+        });
+    }
+    else
+    {
+        /* mouse */
+        window.addEventListener("mouseup", function(event)
+        {
+            Button.mouseup(event);
+        });
+        window.addEventListener("mousedown", function(event)
+        {
+            Button.mousedown(event);
+        });
+        window.addEventListener("mousemove", function(event)
+        {
+            Button.mousemove(event);
+        });
+    }
 };
