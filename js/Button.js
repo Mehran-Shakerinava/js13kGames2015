@@ -22,11 +22,11 @@ function Button(ctx, x, y, job)
 
 Button.prototype =
 {
-    show: function(ctx)
+    show: function()
     {
         var ctx = this.ctx;
         ctx.save();
-        ctx.fillStyle = "rgba(241, 192, 21, 0.8)";
+        ctx.fillStyle = this.color || "rgba(241, 192, 21, 0.8)";
         Graphics.roundedRect(ctx,
             this.x - this.width / 2, this.y - this.height / 2,
             this.width, this.height, 5);

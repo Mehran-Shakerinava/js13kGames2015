@@ -41,6 +41,13 @@ var GameManager =
         GraphicsManager.renderINTRO();
     },
 
+    gotoTUTORIAL: function()
+    {
+        GameManager.state = "TUTORIAL";
+        Controller.turnOff();
+        GraphicsManager.renderTUTORIAL();
+    },
+
     gotoWORLDSEL: function()
     {
         GameManager.state = "WORLDSEL";
@@ -167,17 +174,35 @@ var GameManager =
             {
                 var node2 = levelData.nodes[node.links[j]];
 
-                var dx = node.x - node2.x;
-                var dy = node.y - node2.y;
+                /* node2 perspective */
+                var d = {x: node.x - node2.x, y: node.y - node2.y};
+                var dlen = Geometry.length(d.x, d.y);
+                var theta = Math.acos((node2.radius - node.radius) / dlen);
+                var v1 = Geometry.rotate(d, theta);
+                v1.x *= node2.radius / dlen;
+                v1.y *= node2.radius / dlen;
+                var v2 = Geometry.rotate(d, -theta);
+                v2.x *= node2.radius / dlen;
+                v2.y *= node2.radius / dlen;
+                var p1x = node2.x + v1.x;
+                var p1y = node2.y + v1.y;
+                var p2x = node2.x + v2.x;
+                var p2y = node2.y + v2.y;
 
-                var p1x = node.x - dy * Math.sqrt(Geometry.sqr(node.radius) / (Geometry.sqr(dx) + Geometry.sqr(dy)));
-                var p1y = node.y + dx * Math.sqrt(Geometry.sqr(node.radius) / (Geometry.sqr(dx) + Geometry.sqr(dy)));
-                var p2x = 2 * node.x - p1x;
-                var p2y = 2 * node.y - p1y;
-                var p3x = node2.x + dy * Math.sqrt(Geometry.sqr(node2.radius) / (Geometry.sqr(dx) + Geometry.sqr(dy)));
-                var p3y = node2.y - dx * Math.sqrt(Geometry.sqr(node2.radius) / (Geometry.sqr(dx) + Geometry.sqr(dy)));
-                var p4x = 2 * node2.x - p3x;
-                var p4y = 2 * node2.y - p3y;
+                /* node perspective */
+                var d = {x: node2.x - node.x, y: node2.y - node.y};
+                var dlen = Geometry.length(d.x, d.y);
+                var theta = Math.acos((node.radius - node2.radius) / dlen);
+                var v1 = Geometry.rotate(d, theta);
+                v1.x *= node.radius / dlen;
+                v1.y *= node.radius / dlen;
+                var v2 = Geometry.rotate(d, -theta);
+                v2.x *= node.radius / dlen;
+                v2.y *= node.radius / dlen;
+                var p3x = node.x + v1.x;
+                var p3y = node.y + v1.y;
+                var p4x = node.x + v2.x;
+                var p4y = node.y + v2.y;
 
                 ctx.beginPath();
                 ctx.moveTo(p1x, p1y);
@@ -188,8 +213,6 @@ var GameManager =
             }
         }
 
-        /* BOOM performance down the drain! */
-        //Googooli.collisionImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         Googooli.wallsContext = ctx;
 
         var canvas2 = canvas;

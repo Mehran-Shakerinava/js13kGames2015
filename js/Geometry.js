@@ -15,5 +15,13 @@ var Geometry =
     sqr: function(x)
     {
         return x * x;
+    },
+
+    rotate: function(v, theta)
+    {
+        return {
+            x: Math.cos(theta) * v.x - Math.sin(theta) * v.y,
+            y: Math.sin(theta) * v.x + Math.cos(theta) * v.y
+        };
     }
 };

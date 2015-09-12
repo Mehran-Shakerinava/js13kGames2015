@@ -1,7 +1,12 @@
 var Persistent =
 {
-    data:
+    data: null,
+
+    defaultData:
     {
+        audioOn: true,
+        musicOn: true,
+
         worlds:
         [
             /* 0 */
@@ -23,6 +28,11 @@ var Persistent =
         var dataString = window.localStorage.getItem("GOOGOOLI");
         if(dataString != "undefined" && dataString != "null" && dataString)
             Persistent.data = JSON.parse(dataString);
+        else
+        {
+            Persistent.data = Persistent.defaultData;
+            console.log("Loaded default data.")
+        }
     },
 
     save: function()

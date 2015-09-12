@@ -2,12 +2,15 @@
 
 var SoundManager =
 {
+    audioOn: true,
+    musicOn: true,
+
     audioCtx: null,
     
     errorSource: null,
-    errorBiquadFilter: null,
-
     clickSource: null,
+    
+    errorBiquadFilter: null,
     clickBiquadFilter: null,
 
     gainNode: null,
@@ -17,7 +20,7 @@ var SoundManager =
 		SoundManager.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         
         SoundManager.gainNode = SoundManager.audioCtx.createGain();
-		SoundManager.setVolume(1);
+		SoundManager.gainNode.gain.value = (SoundManager.audioOn ? 1 : 0);
 		SoundManager.gainNode.connect(SoundManager.audioCtx.destination);
 
         SoundManager.errorBiquadFilter = SoundManager.audioCtx.createBiquadFilter();
@@ -33,11 +36,8 @@ var SoundManager =
         SoundManager.clickBiquadFilter.Q.value = 35;
         SoundManager.clickBiquadFilter.gain.value = 10;
         SoundManager.clickBiquadFilter.connect(SoundManager.gainNode);
-	},
 
-	setVolume: function(vol)
-	{
-		SoundManager.gainNode.gain.value = vol;
+        /* TODO: load musicOn */
 	},
 
     playError: function()
@@ -64,5 +64,25 @@ var SoundManager =
         SoundManager.clickSource.connect(SoundManager.clickBiquadFilter);
         SoundManager.clickSource.start(SoundManager.audioCtx.currentTime);
         SoundManager.clickSource.stop(SoundManager.audioCtx.currentTime + 0.10);
+    },
+
+    toggleAudio: function()
+    {
+        var gain = SoundManager.gainNode.gain;
+        if(gain.value > 0)
+        {
+            gain.value = 0;
+            SoundManager.audioOn = false;
+        }
+        else
+        {
+            gain.value = 1;
+            SoundManager.audioOn = true;
+        }
+    },
+
+    toggleMusic: function()
+    {
+        SoundManager.musicOn = !SoundManager.musicOn;
     }
 };

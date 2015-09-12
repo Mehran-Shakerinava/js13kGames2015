@@ -113,7 +113,7 @@ var GraphicsManager = {
         {
             SoundManager.playClick();
             Button.clearListening();
-            GraphicsManager.clearCanvas(this.ctx);
+            GraphicsManager.clearScreen();
             GameManager.gotoWORLDSEL();
         });
         button.icon = document.getElementById("play");
@@ -121,7 +121,126 @@ var GraphicsManager = {
         button.height = 80;
         button.show();
 
+        var fullscreenButton = new Button(ctx, 50, ctx.canvas.height - 50, function()
+        {
+            SoundManager.playClick();
+            screenfull.toggle();
+        });
+        fullscreenButton.icon = document.getElementById("larger");
+        fullscreenButton.width = 40;
+        fullscreenButton.height = 40;
+        fullscreenButton.show();
+
+        var ctx = GraphicsManager.guiContext;
+        var audioButton = new Button(ctx, 50, ctx.canvas.height - 2 * 50, function()
+        {
+            SoundManager.toggleAudio();
+            Persistent.data.audioOn = SoundManager.audioOn;
+            Persistent.save();
+            SoundManager.playClick();
+            this.icon = document.getElementById(SoundManager.audioOn ? "audioOn" : "audioOff");
+            this.unlisten();
+            this.clear();
+            this.show();
+        });
+        audioButton.icon = document.getElementById(SoundManager.audioOn ? "audioOn" : "audioOff");
+        audioButton.width = 40;
+        audioButton.height = 40;
+        audioButton.show();
+
+        var musicButton = new Button(ctx, 50, ctx.canvas.height - 3 * 50, function()
+        {
+            SoundManager.toggleMusic();
+            Persistent.data.musicOn = SoundManager.musicOn;
+            Persistent.save();
+            SoundManager.playClick();
+            this.icon = document.getElementById(SoundManager.musicOn ? "musicOn" : "musicOff");
+            this.unlisten();
+            this.clear();
+            this.show();
+        });
+        musicButton.icon = document.getElementById(SoundManager.musicOn ? "musicOn" : "musicOff");
+        musicButton.width = 40;
+        musicButton.height = 40;
+        musicButton.show();
+
+        var trashButton = new Button(ctx, ctx.canvas.width - 50, ctx.canvas.height - 50, function()
+        {
+            SoundManager.playClick();
+            var ctx = GraphicsManager.overlayContext;
+            GraphicsManager.clearCanvas(ctx);
+            
+            ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
+            Graphics.roundedRect(ctx, ctx.canvas.width - 150, ctx.canvas.height - 170, 140, 90, 5);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.moveTo(ctx.canvas.width - 50, ctx.canvas.height - 70);
+            ctx.lineTo(ctx.canvas.width - 55, ctx.canvas.height - 80);
+            ctx.lineTo(ctx.canvas.width - 45, ctx.canvas.height - 80);
+            ctx.fill();
+            
+            ctx.font = "13px 'Comic Sans MS'";
+            ctx.textAlign = "center";
+            ctx.fillStyle = "white";
+            ctx.fillText("Do you want to", ctx.canvas.width - 80, ctx.canvas.height - 150);
+            ctx.fillText("delete all saved data?", ctx.canvas.width - 80, ctx.canvas.height - 130);
+
+            var yesButton = new Button(ctx, ctx.canvas.width - 115, ctx.canvas.height - 105, function()
+            {
+                GraphicsManager.clearCanvas(this.ctx);
+                SoundManager.playClick();
+                Persistent.data.worlds = Persistent.defaultData.worlds;
+                Persistent.save();
+            });
+            yesButton.text = "Yes";
+            yesButton.width = 60;
+            yesButton.height = 30;
+            yesButton.show();
+
+            var noButton = new Button(ctx, ctx.canvas.width - 45, ctx.canvas.height - 105, function()
+            {
+                GraphicsManager.clearCanvas(this.ctx);
+                SoundManager.playClick();
+            });
+            noButton.text = "No";
+            noButton.width = 60;
+            noButton.height = 30;
+            noButton.show();
+        });
+        trashButton.icon = document.getElementById("trashcanOpen");
+        trashButton.width = 40;
+        trashButton.height = 40;
+        trashButton.color = "rgba(255, 0, 0, 0.8)";
+        trashButton.show();
+
+        var js13Button = new Button(ctx, ctx.canvas.width / 2, ctx.canvas.height - 50, function()
+        {
+            SoundManager.playClick();
+            window.open("http://www.js13kGames.com", "_blank");
+        });
+        js13Button.icon = document.getElementById("js13kgames");
+        js13Button.width = 114;
+        js13Button.height = 32;
+        js13Button.color = "rgba(0, 0, 0, 0)";
+        js13Button.show();
+
+        var questionButton = new Button(ctx, 50, ctx.canvas.height - 4 * 50, function()
+        {
+            SoundManager.playClick();
+            GameManager.gotoTUTORIAL();
+        });
+        questionButton.icon = document.getElementById("question");
+        questionButton.width = 40;
+        questionButton.height = 40;
+        questionButton.show();
+
+
         ctx.restore();
+    },
+
+    renderTUTORIAL: function()
+    {
+        
     },
 
     renderWORLDSEL: function()
@@ -243,13 +362,13 @@ var GraphicsManager = {
         var ctx = GraphicsManager.prizeContext;
         ctx.save();
 
-        var width = 200;
+        var width = 180;
         var height = 200;
         ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
         Graphics.roundedRect(ctx,
             ctx.canvas.width / 2 - width / 2,
             ctx.canvas.height / 2 - height / 2,
-            width, height, 5);
+            width, height, 20);
         ctx.fill();
 
         var levelData = Worlds[GameManager.world].levels[GameManager.level];
@@ -267,13 +386,12 @@ var GraphicsManager = {
         ctx.fillStyle = "white";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.font = "italic 16px Arial";
+        ctx.font = "italic 16px 'Comic Sans MS'";
         var highscore = Persistent.data.worlds[GameManager.world].levels[GameManager.level].highscore;
         var text = (newHighscore ? "New highscore!" : "highscore: " + Timer.format(highscore));
-        ctx.fillText(text, ctx.canvas.width / 2, ctx.canvas.height / 3 + 15);
-        // ctx.strokeText(text, ctx.canvas.width / 2, ctx.canvas.height / 3 + 15);
+        ctx.fillText(text, ctx.canvas.width / 2, ctx.canvas.height / 2 - 40);
 
-        var nextButton = new Button(ctx, ctx.canvas.width / 2, ctx.canvas.height * 2 / 3 + 15, function()
+        var nextButton = new Button(ctx, ctx.canvas.width / 2, ctx.canvas.height / 2 + 65, function()
         {
             SoundManager.playClick();
             Googooli.reset();
@@ -299,8 +417,8 @@ var GraphicsManager = {
             GameManager.gotoPLAY();
         });
         nextButton.icon = document.getElementById("play");
-        nextButton.width = 45;
-        nextButton.height = 45;
+        nextButton.width = 60;
+        nextButton.height = 60;
         nextButton.show();
 
         ctx.restore();
@@ -310,19 +428,19 @@ var GraphicsManager = {
     {
         var ctx = GraphicsManager.guiContext;
         ctx.save();
-        
-        ctx.font = "Bold 70px Georgia";
+
+        ctx.font = "36px Impact";
         var width = ctx.measureText("GAMEOVER").width;
-        ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
+        ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
         Graphics.roundedRect(ctx,
             ctx.canvas.width / 2 - width / 2 - 5,
-            ctx.canvas.height / 2 - 40, width + 10, 80, 5);
+            ctx.canvas.height - 45, width + 10, 40, 5);
         ctx.fill();
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillStyle = "rgba(255, 0, 0, 0.7)";
-        ctx.fillText("GAMEOVER", ctx.canvas.width / 2, ctx.canvas.height / 2);
-        
+        ctx.fillStyle = "rgba(238, 27, 27, 1)";
+        ctx.fillText("GAMEOVER", ctx.canvas.width / 2, ctx.canvas.height - 25);
+
         ctx.restore();
     },
 
