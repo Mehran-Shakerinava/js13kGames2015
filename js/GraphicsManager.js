@@ -169,7 +169,7 @@ var GraphicsManager = {
             SoundManager.playClick();
             var ctx = GraphicsManager.overlayContext;
             GraphicsManager.clearCanvas(ctx);
-            
+
             ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
             Graphics.roundedRect(ctx, ctx.canvas.width - 150, ctx.canvas.height - 170, 140, 90, 5);
             ctx.fill();
@@ -178,7 +178,7 @@ var GraphicsManager = {
             ctx.lineTo(ctx.canvas.width - 55, ctx.canvas.height - 80);
             ctx.lineTo(ctx.canvas.width - 45, ctx.canvas.height - 80);
             ctx.fill();
-            
+
             ctx.font = "13px 'Comic Sans MS'";
             ctx.textAlign = "center";
             ctx.fillStyle = "white";
@@ -238,9 +238,8 @@ var GraphicsManager = {
         ctx.restore();
     },
 
-    renderTUTORIAL: function()
-    {
-        
+    renderTUTORIAL: function() {
+
     },
 
     renderWORLDSEL: function()
@@ -327,7 +326,8 @@ var GraphicsManager = {
             {
                 var levelData = Worlds[GameManager.world].levels[GameManager.level];
                 var time = Persistent.data.worlds[world].levels[i].highscore / 1000;
-                if(time <= levelData.gold) button.icon = document.getElementById("gold");
+                if(time === 0) button.icon = document.getElementById("carrot");
+                else if(time <= levelData.gold) button.icon = document.getElementById("gold");
                 else if(time <= levelData.silver) button.icon = document.getElementById("silver");
                 else if(time <= levelData.bronze) button.icon = document.getElementById("bronze");
                 else button.icon = document.getElementById("carrot");
